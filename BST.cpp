@@ -107,7 +107,6 @@ int BST::max(int a, int b) {
 }
 
 void BST::Delete(int key) {
-
 	bool root_is_a_left_Child;
 	BSTNode * parent;
 
@@ -116,139 +115,95 @@ void BST::Delete(int key) {
 	if (!root)		// This means we don't have any node with that key
 		return;
 	else if (root == BSTroot){// Check if XOR there is nothing to the left or nothing to the right
-		// this is wrong
 		if (sizeOfBST == 1) {
 			delete BSTroot;
 			BSTroot = nullptr;
-			sizeOfBST--;
-			return;
 		}
 		else if (BSTroot->left) {// To check if we have something on the left
 			BSTNode * rightMostNodeParent;
 			BSTNode * rightMostNode_ofLeftTree = get_Right_Most_Or_Left_Most_Node(false, BSTroot->left, rightMostNodeParent);
-			if (rightMostNode_ofLeftTree == BSTroot->left) {// This means there is no rightmost Node of the left tree
-				rightMostNode_ofLeftTree = BSTroot->right;
+			if (rightMostNode_ofLeftTree == BSTroot->left) {// Left tree of root has nothing on the right
+				rightMostNode_ofLeftTree->right = BSTroot->right;
 				delete BSTroot;
 				BSTroot = rightMostNode_ofLeftTree;
-				sizeOfBST--;
-				return;
 			}
 			else {
 				rightMostNodeParent->right = rightMostNode_ofLeftTree->left;
 				swap(BSTroot, rightMostNode_ofLeftTree);
 				delete rightMostNode_ofLeftTree;
-			  	sizeOfBST--;
-				return;
 			}
 		}
-		else {// If we don't have something on the left we have to have something on the right becasue sizeOfBST > 1
-			BSTNode * leftMostNodeParent;
-			BSTNode * leftMostNode_ofRightTree = get_Right_Most_Or_Left_Most_Node(true, BSTroot->right, leftMostNodeParent);
-			if (leftMostNode_ofRightTree == BSTroot->right) {
-				// This means right most tree has no leftest Node
-				delete BSTroot;
-				BSTroot = leftMostNode_ofRightTree;
-				sizeOfBST--;
-				return;
-			}
-			else{
-				leftMostNodeParent->left = leftMostNode_ofRightTree->right;
-				swap(BSTroot, leftMostNode_ofRightTree);
-				delete leftMostNode_ofRightTree;
-				sizeOfBST--;
-				return;
-			}
+		else {// If we don't have something on the left we have to have something on the right becasue sizeOfBST > 
+			// On the right we have already have a valid BST so we can just make the BSTroot just whatever is on the right
+			BSTroot = BSTroot->right;
+			delete root;
 		}
+		sizeOfBST--;
+		return;
 	}
 
-		bool has_left_child = root->left;
-		bool has_right_child = root->right;
+	bool has_left_child = root->left;
+	bool has_right_child = root->right;
 
-		if (!has_left_child && !has_right_child) {
-			if (root_is_a_left_Child) {
-				parent->left = nullptr;
-				delete root;
-				sizeOfBST--;
-				return;
-			}
-			else {
-				parent->right = nullptr;
-				delete root;
-				sizeOfBST--;
-				return;
-			}
+	// root is Leaf node case
+	if (!has_left_child && !has_right_child) {
+		if (root_is_a_left_Child) {
+			parent->left = nullptr;
 		}
-		else if(!has_left_child){
-			if (root_is_a_left_Child) {
-				parent->left = root->right;
-				delete root;
-				sizeOfBST--;
-				return;
-			}
-			else {
-				parent->right = root->left;
-				delete root;
-				sizeOfBST--;
-				return;
-			}
+		else {
+			parent->right = nullptr;
 		}
-		else if (!has_right_child) {
-			if (root_is_a_left_Child) {
+		delete root;
+	}
+	// If nodeToRemove is not a leaf node then it either has left child or right child or both
+	else if(!has_left_child){
+		if (root_is_a_left_Child) {
+			parent->left = root->right;		
+		}
+		else {
+			parent->right = root->right;
+		}
+		delete root;
+	}
+	else if (!has_right_child) {
+		if (root_is_a_left_Child) {
+			parent->left = root->left;
+		}
+		else {
+			parent->right = root->left;	
+		}
+		delete root;
+	}
+	else {
+		if (root_is_a_left_Child) {
+			BSTNode * rightMostNodeParent;
+			BSTNode * rightMostNode_ofLeftTree = get_Right_Most_Or_Left_Most_Node(false, root->left, rightMostNodeParent);
+			if (rightMostNode_ofLeftTree == root->left) {// This means there is no rightmost Node of the left tree
 				parent->left = root->left;
 				delete root;
-				sizeOfBST--;
-				return;
 			}
 			else {
-				parent->right = root->right;
-				delete root;
-				sizeOfBST--;
-				return;
+				rightMostNodeParent->right = rightMostNode_ofLeftTree->left;
+				swap(root, rightMostNode_ofLeftTree);
+				delete rightMostNode_ofLeftTree;
 			}
 		}
 		else {
-			if (root_is_a_left_Child) {
-				BSTNode * rightMostNodeParent;
-				BSTNode * rightMostNode_ofLeftTree = get_Right_Most_Or_Left_Most_Node(false, root->left, rightMostNodeParent);
-				if (rightMostNode_ofLeftTree == root->left) {// This means there is no rightmost Node of the left tree
-					rightMostNode_ofLeftTree = root->right;
-					delete root;
-					root = rightMostNode_ofLeftTree;
-					sizeOfBST--;
-					return;
-				}
-				else {
-					rightMostNodeParent->right = rightMostNode_ofLeftTree->left;
-					swap(root, rightMostNode_ofLeftTree);
-					delete rightMostNode_ofLeftTree;
-					sizeOfBST--;
-					return;
-				}
+			BSTNode * leftMostNodeParent;
+			BSTNode * leftMostNode_ofRightTree = get_Right_Most_Or_Left_Most_Node(true, root->right, leftMostNodeParent);
+			if (leftMostNode_ofRightTree == root->right) {
+				parent->right = root->right;
+				delete root;
 			}
 			else {
-				BSTNode * leftMostNodeParent;
-				BSTNode * leftMostNode_ofRightTree = get_Right_Most_Or_Left_Most_Node(true, root->right, leftMostNodeParent);
-				if (leftMostNode_ofRightTree == root->right) {
-					// This means right most tree has no leftest Node
-					delete root;
-					root = leftMostNode_ofRightTree;
-					sizeOfBST--;
-					return;
-				}
-				else {
-
-					leftMostNodeParent->left = leftMostNode_ofRightTree->right;
-					swap(root, leftMostNode_ofRightTree);
-					delete leftMostNode_ofRightTree;
-					sizeOfBST--;
-					return;
-				}
+				leftMostNodeParent->left = leftMostNode_ofRightTree->right;
+				swap(parent->right, leftMostNode_ofRightTree);
+				delete leftMostNode_ofRightTree;
 			}
 		}
-	
-
-
-	
+	}
+	sizeOfBST--;
+	return;
 }
 int BST::size() {
 	return sizeOfBST;
